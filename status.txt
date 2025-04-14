@@ -1,0 +1,30 @@
+Announced: Projects that have been publicly reported but have not yet moved 
+actively forward by applying for permits or seeking land, material, or financing. 
+
+Pre-construction: Projects that are actively moving forward in 
+seeking governmental approvals, land rights, or financing. 
+
+Construction: Site preparation and other activities are underway. 
+
+Operating: The plant has been formally commissioned; commercial operation has begun. 
+
+Shelved: Two years have passed with no action on a project after the project proposal. 
+
+Canceled: A cancellation announcement has been made. The status is marked as 
+'canceled – inferred 4 y' if no progress has been observed for at least four years.
+
+Mothballed: The project is disused, but not dismantled. 
+
+Retired: The project has been decommissioned; this term is also used if the plant has been destroyed by war.
+
+Idle: In the context of LNG terminals, an "idle project" refers to a terminal that has been constructed but is 
+not currently operational or actively receiving LNG shipments. This status can result from a variety of factors, 
+such as unfavorable market conditions, operational or technical issues, delays in obtaining regulatory permits, 
+strategic decisions by the operators, or the terminal being in a development or commissioning phase.
+
+
+
+
+
+
+

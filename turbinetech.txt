@@ -1,0 +1,18 @@
+
+AFC Power Cycle: The Allam-Fetvedt Cycle is an innovative power generation process that combines high efficiency with near-zero emissions. It utilizes oxy-fuel combustion and supercritical carbon dioxide (CO₂) as the working fluid, enabling integrated carbon capture without the need for additional equipment.​ The Allam Cycle or Allam-Fetvedt Cycle is a process for converting carbonaceous fuels[1] into thermal energy while capturing the generated carbon dioxide and water. The inventors are English engineer Rodney John Allam, American engineer Jeremy Eron Fetvedt, American scientist Dr. Miles R Palmer, and American businessperson and innovator G. William Brown, Jr. MIT Technology Review recognized the Allam-Fetvedt Cycle on the 2018 list of 10 Breakthrough Technologies.
+
+
+Combined Cycle Power Plant: A combined cycle power plant (CCPP) is a highly efficient electricity generation system that integrates two thermodynamic cycles—Brayton and Rankine—to maximize energy output from a single fuel source, typically natural gas.​
+
+​Gas Turbine: A gas turbine is a type of internal combustion engine that converts the chemical energy of fuel into mechanical energy through a continuous process of air compression, fuel combustion, and expansion of hot gases.​
+
+ICCC: In Gas Plants, ICCC (Integrated Combustion Control and Cooling) refers to the advanced system that optimizes combustion performance and thermal management in gas turbines — resulting in higher efficiency, lower emissions, and better operational flexibility.
+
+
+Internal combustion: Internal combustion technology plays a critical role in natural gas-fired power generation, primarily through two systems: internal combustion engines (ICE) and gas turbines (GT). Both technologies convert the chemical energy of natural gas into mechanical energy, which is then used to produce electricity. Internal combustion engines operate through piston-driven combustion within cylinders, making them ideal for small to medium-scale power generation, distributed energy systems, and combined heat and power (CHP) applications.
+
+ISCC: ISCC stands for Integrated Solar Combined Cycle. It is an innovative hybrid power generation technology that combines. This system integrates a solar thermal field (usually parabolic trough mirrors) with a conventional combined cycle gas turbine (CCGT) power plant.
+
+Steam Engine: In gas-fired power plants, steam turbines are typically used as part of a Combined Cycle Gas Turbine (CCGT) system to improve overall efficiency. In this configuration, a gas turbine generates electricity by burning natural gas, and its hot exhaust gases are used to produce steam in a Heat Recovery Steam Generator (HRSG). The generated steam is then directed to a steam turbine, which converts the thermal energy of the steam into mechanical energy to drive an additional generator. This process allows gas plants to maximize energy output from the same fuel source, significantly increasing efficiency — often reaching 55-64% — while reducing fuel consumption and emissions compared to simple-cycle systems.
+
+
