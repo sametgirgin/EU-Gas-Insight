@@ -6,46 +6,6 @@ import requests  # For API calls
 import google.generativeai as genai
 import os
 
-# Configure the Gemini API with your API key from secrets
-GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
-
-if not GOOGLE_API_KEY:
-    st.error("API Key not found. Please set the GOOGLE_API_KEY in secrets.toml.")
-    st.stop()
-
-genai.configure(api_key=GOOGLE_API_KEY)
-
-# Available models (you can choose others, like 'gemini-1.5-pro-latest')
-MODEL_NAME = 'gemini-2.0-flash'
-generation_config = genai.GenerationConfig(
-    temperature=0.7,
-    top_p=1.0,
-    top_k=1,
-    max_output_tokens=2048,
-)
-safety_settings = [
-    {
-        "category": "HARM_CATEGORY_HARASSMENT",
-        "threshold": "BLOCK_MEDIUM_AND_ABOVE"
-    },
-    {
-        "category": "HARM_CATEGORY_HATE_SPEECH",
-        "threshold": "BLOCK_MEDIUM_AND_ABOVE"
-    },
-    {
-        "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-        "threshold": "BLOCK_MEDIUM_AND_ABOVE"
-    },
-    {
-        "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
-        "threshold": "BLOCK_MEDIUM_AND_ABOVE"
-    },
-]
-
-model = genai.GenerativeModel(model_name=MODEL_NAME,
-                              generation_config=generation_config,
-                              safety_settings=safety_settings)
-
 @st.cache_data
 def load_gaspowerplants_data():
     return pd.read_excel('gaspowerplants.xlsx')
@@ -73,7 +33,6 @@ def aggregate_lng_data(lng_df):
         }
     ).reset_index()
 
-
 # Use the cached functions
 df = load_gaspowerplants_data()
 lng_df = load_lng_data()
@@ -81,7 +40,6 @@ pipeline_df = load_pipeline_data()
 
 # Ensure the CapacityInMtpa column is numeric
 lng_df['CapacityInMtpa'] = pd.to_numeric(lng_df['CapacityInMtpa'], errors='coerce')
-
 
 # Aggregate LNG data
 aggregated_lng_df = aggregate_lng_data(lng_df)
@@ -99,8 +57,13 @@ except FileNotFoundError:
 # Sidebar for filters
 #st.sidebar.header("Filter")
 
-# Create tabs
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["EU O&G Power Plants Map and Charts", "EU LNG Terminals", "EU Gas Pipeline Map", "Dictionary", "GasGPT"])
+# Create tabs (Gemini tab removed)
+tab1, tab2, tab3, tab4 = st.tabs([
+    "EU O&G Power Plants Map and Charts",
+    "EU LNG Terminals",
+    "EU Gas Pipeline Map",
+    "Dictionary"
+])
 
 # Tab 1: EU Oil & Gas Power Plants
 with tab1:
@@ -138,12 +101,14 @@ with tab1:
     if all(column in filtered_df.columns for column in required_columns):
         # Aggregate capacity by Plant name, Latitude, and Longitude
         aggregated_df = filtered_df.groupby(['Plant name', 'Latitude', 'Longitude']).agg(
-            {'Capacity (MW)': 'sum', 
-             'Unit name': lambda x: ', '.join(map(str, x)),
-             'Start year': 'first',
-             'Retired year': 'first',
-             'Owner(s)': lambda x: ', '.join(set(map(str, x))),
-             'City': 'first'}
+            {
+                'Capacity (MW)': 'sum', 
+                'Unit name': lambda x: ', '.join(map(str, x)),
+                'Start year': 'first',
+                'Retired year': 'first',
+                'Owner(s)': lambda x: ', '.join(set(map(str, x))),
+                'City': 'first'
+            }
         ).reset_index()
 
         # Create a bubble map using plotly.express with Mapbox
@@ -174,7 +139,6 @@ with tab1:
         )
         st.plotly_chart(fig)
 
-    # Add bar charts to Tab 1
     st.write("## EU Oil & Gas Power Plants Charts")
 
     col1, col2 = st.columns(2)
@@ -188,7 +152,6 @@ with tab1:
                                    y='Capacity (MW)',
                                    title='Top 10 Countries/Areas by Total Capacity')
         
-        # Update layout for better readability
         bar_fig_countries.update_layout(
             xaxis_title="Country/Area",
             yaxis_title="Total Capacity (MW)",
@@ -206,7 +169,6 @@ with tab1:
                               y='Capacity (MW)',
                               title='Turbine/Engine Technology by Total Capacity')
         
-        # Update layout for better readability
         bar_fig_tech.update_layout(
             xaxis_title="Turbine/Engine Technology",
             yaxis_title="Total Capacity (MW)",
@@ -215,99 +177,80 @@ with tab1:
         
         st.plotly_chart(bar_fig_tech, use_container_width=True)
 
-    # Add a new bar chart for total capacity by status    
-    # Group data by status and calculate total capacity
+    # Bar chart for total capacity by status    
     status_capacity = filtered_df.groupby('Status')['Capacity (MW)'].sum().reset_index()
-    
-    # Sort by capacity
     status_capacity = status_capacity.sort_values(by='Capacity (MW)', ascending=False)
-    
-    # Create a bar chart for status
     bar_fig_status = px.bar(status_capacity,
                             x='Status',
                             y='Capacity (MW)',
                             title='Total Capacity by Status')
     
-    # Update layout for better readability
     bar_fig_status.update_layout(
         xaxis_title="Status",
         yaxis_title="Total Capacity (MW)",
         xaxis={'tickangle': 45}
     )
     
-    # Display the bar chart
     st.plotly_chart(bar_fig_status, use_container_width=True)
 
 # Tab 2: EU LNG Terminals
 with tab2:
-    #st.write("## EU LNG Terminals Map")
-
-    # Filters for eu_lng.xlsx
     st.sidebar.subheader("Filters for LNG Terminals")
     facility_type_options = ['All'] + lng_df['FacilityType'].dropna().unique().tolist()
     status_options = ['All'] + lng_df['Status'].dropna().unique().tolist()
     country_options = ['All'] + lng_df['Country'].dropna().unique().tolist()
 
-    # Create filters in the sidebar
     selected_facility_type = st.sidebar.selectbox('Facility Type', facility_type_options)
     selected_status = st.sidebar.selectbox('Status', status_options)
     selected_country = st.sidebar.selectbox('Country', country_options)
 
-    # Apply filters
     filtered_lng_df = lng_df[
         ((lng_df['FacilityType'] == selected_facility_type) | (selected_facility_type == 'All')) &
         ((lng_df['Status'] == selected_status) | (selected_status == 'All')) &
         ((lng_df['Country'] == selected_country) | (selected_country == 'All'))
     ]
 
-    # Ensure the required columns exist
     required_columns_lng = ['Latitude', 'Longitude', 'TerminalName', 'CapacityInMtpa', 'UnitName', 'Status', 'Country', 'Owner', 'Parent', 'ParentHQCountry', 'CapacityInBcm/y', 'ProposalYear', 'Location']
     if all(column in lng_df.columns for column in required_columns_lng):
-        # Create a bubble map using plotly.express with Mapbox
         lng_fig = px.scatter_mapbox(
             aggregated_lng_df,
             lat='Latitude',
             lon='Longitude',
             hover_name='TerminalName',
             hover_data={
-                'CapacityInMtpa': True,       # Show total capacity in Mtpa
-                'UnitName': True,            # Show concatenated unit names
-                'Owner': True,               # Show owner
-                'Parent': True,              # Show parent
-                'ParentHQCountry': True,     # Show parent HQ country
-                'CapacityInBcm/y': True,     # Show total capacity in Bcm/y
-                'ProposalYear': True,        # Show proposal year
-                'Location': True,            # Show location
-                'Latitude': False,           # Hide latitude in hover data
-                'Longitude': False           # Hide longitude in hover data
+                'CapacityInMtpa': True,
+                'UnitName': True,
+                'Owner': True,
+                'Parent': True,
+                'ParentHQCountry': True,
+                'CapacityInBcm/y': True,
+                'ProposalYear': True,
+                'Location': True,
+                'Latitude': False,
+                'Longitude': False
             },
-            size='CapacityInMtpa',  # Bubble size based on total capacity
-            color='CapacityInMtpa',  # Color based on total capacity
+            size='CapacityInMtpa',
+            color='CapacityInMtpa',
             color_continuous_scale=px.colors.cyclical.IceFire,
             size_max=15,
             zoom=3,
             mapbox_style="carto-positron"
         )
 
-        # Update layout to make the map visually appealing
         lng_fig.update_layout(
-            mapbox_accesstoken='YOUR_MAPBOX_ACCESS_TOKEN',  # Replace with your Mapbox token
-            height=800,  # Set the height of the map
-            width=900,  # Set the width of the map
+            mapbox_accesstoken='YOUR_MAPBOX_ACCESS_TOKEN',
+            height=800,
+            width=900,
             title="EU LNG Terminals Bubble Map"
         )
 
-        # Display the map
         st.plotly_chart(lng_fig, use_container_width=True)
     else:
         st.error("The required columns for the LNG map are missing in the 'eu_lng.xlsx' file.")
 
-    # Add a bar chart for total LNG capacity by country
-    #st.write("## Total LNG Capacity by Country")
     country_capacity = filtered_lng_df.groupby('Country')['CapacityInMtpa'].sum().reset_index()
     country_capacity = country_capacity.sort_values(by='CapacityInMtpa', ascending=False)
 
-    # Create the bar chart
     bar_fig_lng = px.bar(
         country_capacity,
         x='Country',
@@ -318,54 +261,41 @@ with tab2:
         color_continuous_scale=px.colors.sequential.Blues
     )
 
-    # Update layout for better readability
     bar_fig_lng.update_layout(
         xaxis_title="Country",
         yaxis_title="Total Capacity (Mtpa)",
         xaxis={'tickangle': 45}
     )
 
-    # Display the bar chart
     st.plotly_chart(bar_fig_lng, use_container_width=True)
 
-# Tab 5: EU Gas Pipeline Map
+# Tab 3: EU Gas Pipeline Map
 with tab3:
-    #st.write("## EU Gas Pipeline Map")
-
-    # Sidebar filters for pipelines
     st.sidebar.subheader("Filters for European Gas Pipelines")
     fuel_options = ['All'] + pipeline_df['Fuel'].dropna().unique().tolist()
     status_options = ['All'] + pipeline_df['Status'].dropna().unique().tolist()
 
-    # Create filters in the sidebar
     selected_fuel = st.sidebar.selectbox('Fuel', fuel_options)
     selected_status = st.sidebar.selectbox('Status', status_options)
 
-    # Apply filters
     filtered_pipeline_df = pipeline_df[
         ((pipeline_df['Fuel'] == selected_fuel) | (selected_fuel == 'All')) &
         ((pipeline_df['Status'] == selected_status) | (selected_status == 'All'))
     ]
 
-    # Ensure the required columns exist
     required_columns_pipeline = [
         'PipelineName', 'WKTFormat', 'Fuel', 'Countries', 'Status', 'Owner', 
         'StartYear1', 'CapacityBcm/y', 'CapacityBOEd', 'LengthKnownKm', 'StartLocation'
     ]
     if all(column in filtered_pipeline_df.columns for column in required_columns_pipeline):
-        # Parse the WKTFormat column manually to extract coordinates
         def parse_wkt_linestring(wkt_string):
-            # Ensure the value is a string
             if isinstance(wkt_string, str) and wkt_string.startswith("LINESTRING"):
-                # Extract the coordinates from the LINESTRING WKT format
                 coords = wkt_string.replace("LINESTRING (", "").replace(")", "").split(", ")
                 return [tuple(map(float, coord.split())) for coord in coords]
-            return []  # Return an empty list for invalid or non-LINESTRING values
+            return []
 
-        # Apply the parsing function to extract coordinates
         filtered_pipeline_df['coordinates'] = filtered_pipeline_df['WKTFormat'].apply(parse_wkt_linestring)
 
-        # Flatten the coordinates for Plotly
         pipeline_data = []
         for _, row in filtered_pipeline_df.iterrows():
             for coord in row['coordinates']:
@@ -386,7 +316,6 @@ with tab3:
 
         pipeline_map_df = pd.DataFrame(pipeline_data)
 
-        # Create a line map using Plotly Express
         fig = px.line_mapbox(
             pipeline_map_df,
             lat='Latitude',
@@ -406,70 +335,61 @@ with tab3:
                 'CapacityBOEd': True,
                 'LengthKnownKm': True,
                 'StartLocation': True,
-                'Latitude': False,  # Hide latitude in hover data
-                'Longitude': False  # Hide longitude in hover data
+                'Latitude': False,
+                'Longitude': False
             }
         )
 
-        # Update layout for better visualization
         fig.update_layout(
             height=800,
             width=900,
-            mapbox_accesstoken='YOUR_MAPBOX_ACCESS_TOKEN',  # Replace with your Mapbox token
-            showlegend=False  # Disable the legend
+            mapbox_accesstoken='YOUR_MAPBOX_ACCESS_TOKEN',
+            showlegend=False
         )
 
-        # Display the map
         st.plotly_chart(fig, use_container_width=True)
     else:
         missing_columns = [col for col in required_columns_pipeline if col not in filtered_pipeline_df.columns]
         st.error(f"The following required columns are missing in 'gaspipeline.xlsx': {missing_columns}")
 
+# Tab 4: Dictionary
 with tab4:
-    # Read and display the status.txt file
     try:
         with open('status.txt', 'r') as file:
             status_text = file.read()
 
-        # Parse the status text into a dictionary
         status_definitions = {}
         for line in status_text.split('\n'):
             if ':' in line:
                 status, definition = line.split(':', 1)
                 status_definitions[status.strip()] = definition.strip()
 
-        # Create a DataFrame from the status definitions
         status_df = pd.DataFrame({
             'Status': status_definitions.keys(),
             'Definition': status_definitions.values()
         })
 
-        # Display the status DataFrame without an index
         st.write("### Status Definitions")
         st.dataframe(status_df.style.hide(axis="index"))
 
     except FileNotFoundError:
         st.error("The file 'status.txt' was not found.")
 
-    # Read and display the turbine_tech.txt file
     try:
         with open('turbinetech.txt', 'r') as file:
             turbine_text = file.read()
 
-        # Parse the turbine text into a dictionary
         turbine_definitions = {}
         for line in turbine_text.split('\n'):
             if ':' in line:
                 tech_type, definition = line.split(':', 1)
                 turbine_definitions[tech_type.strip()] = definition.strip()
 
-        # Create a DataFrame from the turbine definitions
         turbine_df = pd.DataFrame({
             'Technology Type': turbine_definitions.keys(),
             'Definition': turbine_definitions.values()
         })
 
-        # Apply styles to wrap text in the table
         styled_turbine_df = turbine_df.style.set_table_styles(
             [{
                 'selector': 'td',
@@ -477,32 +397,27 @@ with tab4:
             }]
         ).hide(axis="index")
 
-        # Display the turbine DataFrame with wrapped text
         st.write("### Turbine Technology Definitions")
         st.dataframe(styled_turbine_df)
 
     except FileNotFoundError:
         st.error("The file 'turbinetech.txt' was not found.")
 
-    # Read and display the lng.txt file
     try:
         with open('lng.txt', 'r') as file:
             lng_text = file.read()
 
-        # Parse the LNG text into a dictionary
         lng_definitions = {}
         for line in lng_text.split('\n'):
             if ':' in line:
                 lng_term, definition = line.split(':', 1)
                 lng_definitions[lng_term.strip()] = definition.strip()
 
-        # Create a DataFrame from the LNG definitions
         lng_df = pd.DataFrame({
             'LNG Term': lng_definitions.keys(),
             'Definition': lng_definitions.values()
         })
 
-        # Apply styles to wrap text in the table
         styled_lng_df = lng_df.style.set_table_styles(
             [{
                 'selector': 'td',
@@ -510,28 +425,8 @@ with tab4:
             }]
         ).hide(axis="index")
 
-        # Display the LNG DataFrame with wrapped text
         st.write("### LNG Facility Types")
         st.dataframe(styled_lng_df)
 
     except FileNotFoundError:
         st.error("The file 'lng.txt' was not found.")
-
-with tab5:
-    st.title("Chat with Google Gemini on EU Gas Data")
-
-    # Input for user question
-    user_prompt = st.text_area("Ask a question about gas power plants:", "What are the advantages of gas power plants?")
-
-    if st.button("Generate Response"):
-        if user_prompt:
-            try:
-                # Generate a response using the Gemini API
-                response = model.generate_content(user_prompt)
-                st.write("### Gemini's Response:")
-                st.write(response.text)  # Access the generated text
-            except Exception as e:
-                st.error(f"An error occurred: {e}")
-        else:
-            st.warning("Please enter a question.")
-
