@@ -4,4 +4,3 @@ plotly
 numpy
 requests
 google-generativeai
-os
