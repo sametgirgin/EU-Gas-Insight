@@ -6,11 +6,11 @@ import requests  # For API calls
 import google.generativeai as genai
 import os
 
-# Configure the Gemini API with your API key from secrets
-GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
+# Configure the Gemini API with your API key from environment variables
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 if not GOOGLE_API_KEY:
-    st.error("API Key not found. Please set the GOOGLE_API_KEY in secrets.toml.")
+    st.error("API Key not found. Please set the GOOGLE_API_KEY as an environment variable.")
     st.stop()
 
 genai.configure(api_key=GOOGLE_API_KEY)
