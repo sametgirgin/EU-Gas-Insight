@@ -13,7 +13,7 @@ if not GOOGLE_API_KEY:
     st.error("API Key not found. Please set the GOOGLE_API_KEY in secrets.toml.")
     st.stop()
 
-genai.configure(api_key="AIzaSyA0Cot8mct59F-tp0OrZjuLrrztD_AVc8E")
+genai.configure(api_key=GOOGLE_API_KEY)
 
 # Available models (you can choose others, like 'gemini-1.5-pro-latest')
 MODEL_NAME = 'gemini-2.0-flash'
