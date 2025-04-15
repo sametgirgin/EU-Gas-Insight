@@ -346,7 +346,7 @@ with tab3:
 
     # Ensure the required columns exist
     required_columns_pipeline = [
-        'PipelineName', 'Coordinates', 'Fuel', 'Countries', 'Status', 'Owner', 
+        'PipelineName', 'NewWKTFormat', 'Fuel', 'Countries', 'Status', 'Owner', 
         'StartYear1', 'CapacityBcm/y', 'CapacityBOEd', 'LengthKnownKm', 'StartLocation', 'EndCountry'
     ]
     if all(column in filtered_pipeline_df.columns for column in required_columns_pipeline):
