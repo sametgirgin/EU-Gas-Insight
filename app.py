@@ -58,22 +58,6 @@ def load_lng_data():
 def load_pipeline_data():
     return pd.read_excel('gaspipeline.xlsx')
 
-@st.cache_data
-def aggregate_lng_data(lng_df):
-    return lng_df.groupby(['TerminalName', 'Latitude', 'Longitude']).agg(
-        {
-            'CapacityInMtpa': 'sum',
-            'UnitName': lambda x: ', '.join(set(map(str, x.dropna()))),
-            'Owner': lambda x: ', '.join(set(map(str, x.dropna()))),
-            'Parent': lambda x: ', '.join(set(map(str, x.dropna()))),
-            'ParentHQCountry': lambda x: ', '.join(set(map(str, x.dropna()))),
-            'CapacityInBcm/y': 'sum',
-            'ProposalYear': 'first',
-            'Location': 'first'
-        }
-    ).reset_index()
-
-
 # Use the cached functions
 df = load_gaspowerplants_data()
 lng_df = load_lng_data()
@@ -84,7 +68,7 @@ lng_df['CapacityInMtpa'] = pd.to_numeric(lng_df['CapacityInMtpa'], errors='coerc
 
 
 # Aggregate LNG data
-aggregated_lng_df = aggregate_lng_data(lng_df)
+#aggregated_lng_df = aggregate_lng_data(lng_df)
 
 # Replace NaN values with 0 (optional, depending on your use case)
 lng_df['CapacityInMtpa'] = lng_df['CapacityInMtpa'].fillna(0)
@@ -240,9 +224,7 @@ with tab1:
 
 # Tab 2: EU LNG Terminals
 with tab2:
-    #st.write("## EU LNG Terminals Map")
-
-    # Filters for eu_lng.xlsx
+    # Sidebar filters for LNG Terminals
     st.sidebar.subheader("Filters for LNG Terminals")
     facility_type_options = ['All'] + lng_df['FacilityType'].dropna().unique().tolist()
     status_options = ['All'] + lng_df['Status'].dropna().unique().tolist()
@@ -262,10 +244,24 @@ with tab2:
 
     # Ensure the required columns exist
     required_columns_lng = ['Latitude', 'Longitude', 'TerminalName', 'CapacityInMtpa', 'UnitName', 'Status', 'Country', 'Owner', 'Parent', 'ParentHQCountry', 'CapacityInBcm/y', 'ProposalYear', 'Location']
-    if all(column in lng_df.columns for column in required_columns_lng):
+    if all(column in filtered_lng_df.columns for column in required_columns_lng):
+        # Aggregate the filtered data
+        aggregated_filtered_lng_df = filtered_lng_df.groupby(['TerminalName', 'Latitude', 'Longitude']).agg(
+            {
+                'CapacityInMtpa': 'sum',
+                'UnitName': lambda x: ', '.join(set(map(str, x.dropna()))),
+                'Owner': lambda x: ', '.join(set(map(str, x.dropna()))),
+                'Parent': lambda x: ', '.join(set(map(str, x.dropna()))),
+                'ParentHQCountry': lambda x: ', '.join(set(map(str, x.dropna()))),
+                'CapacityInBcm/y': 'sum',
+                'ProposalYear': 'first',
+                'Location': 'first'
+            }
+        ).reset_index()
+
         # Create a bubble map using plotly.express with Mapbox
         lng_fig = px.scatter_mapbox(
-            aggregated_lng_df,
+            aggregated_filtered_lng_df,
             lat='Latitude',
             lon='Longitude',
             hover_name='TerminalName',
@@ -303,7 +299,6 @@ with tab2:
         st.error("The required columns for the LNG map are missing in the 'eu_lng.xlsx' file.")
 
     # Add a bar chart for total LNG capacity by country
-    #st.write("## Total LNG Capacity by Country")
     country_capacity = filtered_lng_df.groupby('Country')['CapacityInMtpa'].sum().reset_index()
     country_capacity = country_capacity.sort_values(by='CapacityInMtpa', ascending=False)
 
@@ -328,43 +323,49 @@ with tab2:
     # Display the bar chart
     st.plotly_chart(bar_fig_lng, use_container_width=True)
 
-# Tab 5: EU Gas Pipeline Map
+# Tab 3: EU Gas Pipeline Map
+# Tab 3: EU Gas Pipeline Map (using NewWKTFormat)
 with tab3:
-    #st.write("## EU Gas Pipeline Map")
-
     # Sidebar filters for pipelines
     st.sidebar.subheader("Filters for European Gas Pipelines")
     fuel_options = ['All'] + pipeline_df['Fuel'].dropna().unique().tolist()
     status_options = ['All'] + pipeline_df['Status'].dropna().unique().tolist()
+    end_country_options = ['All'] + pipeline_df['EndCountry'].dropna().unique().tolist()
 
     # Create filters in the sidebar
     selected_fuel = st.sidebar.selectbox('Fuel', fuel_options)
     selected_status = st.sidebar.selectbox('Status', status_options)
+    selected_end_country = st.sidebar.selectbox('End Country', end_country_options)
 
     # Apply filters
     filtered_pipeline_df = pipeline_df[
         ((pipeline_df['Fuel'] == selected_fuel) | (selected_fuel == 'All')) &
-        ((pipeline_df['Status'] == selected_status) | (selected_status == 'All'))
+        ((pipeline_df['Status'] == selected_status) | (selected_status == 'All')) &
+        ((pipeline_df['EndCountry'] == selected_end_country) | (selected_end_country == 'All'))
     ]
 
     # Ensure the required columns exist
     required_columns_pipeline = [
-        'PipelineName', 'WKTFormat', 'Fuel', 'Countries', 'Status', 'Owner', 
-        'StartYear1', 'CapacityBcm/y', 'CapacityBOEd', 'LengthKnownKm', 'StartLocation'
+        'PipelineName', 'Coordinates', 'Fuel', 'Countries', 'Status', 'Owner', 
+        'StartYear1', 'CapacityBcm/y', 'CapacityBOEd', 'LengthKnownKm', 'StartLocation', 'EndCountry'
     ]
     if all(column in filtered_pipeline_df.columns for column in required_columns_pipeline):
         # Parse the WKTFormat column manually to extract coordinates
+    
         def parse_wkt_linestring(wkt_string):
-            # Ensure the value is a string
-            if isinstance(wkt_string, str) and wkt_string.startswith("LINESTRING"):
-                # Extract the coordinates from the LINESTRING WKT format
-                coords = wkt_string.replace("LINESTRING (", "").replace(")", "").split(", ")
-                return [tuple(map(float, coord.split())) for coord in coords]
-            return []  # Return an empty list for invalid or non-LINESTRING values
-
+            """
+            Converts a cleaned WKT string (no LINESTRING/MULTILINESTRING)
+            to a list of (x, y) tuples.
+            """
+            if pd.isna(wkt_string):
+                return []
+            try:
+                return [tuple(map(float, point.strip().split())) for point in wkt_string.split(",")]
+            except:
+                return []
+        
         # Apply the parsing function to extract coordinates
-        filtered_pipeline_df['coordinates'] = filtered_pipeline_df['WKTFormat'].apply(parse_wkt_linestring)
-
+        filtered_pipeline_df['coordinates'] = filtered_pipeline_df['NewWKTFormat'].apply(parse_wkt_linestring)
         # Flatten the coordinates for Plotly
         pipeline_data = []
         for _, row in filtered_pipeline_df.iterrows():
@@ -381,7 +382,8 @@ with tab3:
                     'CapacityBcm/y': row['CapacityBcm/y'],
                     'CapacityBOEd': row['CapacityBOEd'],
                     'LengthKnownKm': row['LengthKnownKm'],
-                    'StartLocation': row['StartLocation']
+                    'StartLocation': row['StartLocation'],
+                    'EndCountry': row['EndCountry']
                 })
 
         pipeline_map_df = pd.DataFrame(pipeline_data)
@@ -406,6 +408,7 @@ with tab3:
                 'CapacityBOEd': True,
                 'LengthKnownKm': True,
                 'StartLocation': True,
+                'EndCountry': True,
                 'Latitude': False,  # Hide latitude in hover data
                 'Longitude': False  # Hide longitude in hover data
             }
@@ -534,4 +537,3 @@ with tab5:
                 st.error(f"An error occurred: {e}")
         else:
             st.warning("Please enter a question.")
-

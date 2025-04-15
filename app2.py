@@ -269,33 +269,49 @@ with tab2:
 
     st.plotly_chart(bar_fig_lng, use_container_width=True)
 
-# Tab 3: EU Gas Pipeline Map
+# Tab 3: EU Gas Pipeline Map (using NewWKTFormat)
 with tab3:
+    # Sidebar filters for pipelines
     st.sidebar.subheader("Filters for European Gas Pipelines")
     fuel_options = ['All'] + pipeline_df['Fuel'].dropna().unique().tolist()
     status_options = ['All'] + pipeline_df['Status'].dropna().unique().tolist()
+    end_country_options = ['All'] + pipeline_df['EndCountry'].dropna().unique().tolist()
 
+    # Create filters in the sidebar
     selected_fuel = st.sidebar.selectbox('Fuel', fuel_options)
     selected_status = st.sidebar.selectbox('Status', status_options)
+    selected_end_country = st.sidebar.selectbox('End Country', end_country_options)
 
+    # Apply filters
     filtered_pipeline_df = pipeline_df[
         ((pipeline_df['Fuel'] == selected_fuel) | (selected_fuel == 'All')) &
-        ((pipeline_df['Status'] == selected_status) | (selected_status == 'All'))
+        ((pipeline_df['Status'] == selected_status) | (selected_status == 'All')) &
+        ((pipeline_df['EndCountry'] == selected_end_country) | (selected_end_country == 'All'))
     ]
 
+    # Ensure the required columns exist
     required_columns_pipeline = [
-        'PipelineName', 'WKTFormat', 'Fuel', 'Countries', 'Status', 'Owner', 
-        'StartYear1', 'CapacityBcm/y', 'CapacityBOEd', 'LengthKnownKm', 'StartLocation'
+        'PipelineName', 'Coordinates', 'Fuel', 'Countries', 'Status', 'Owner', 
+        'StartYear1', 'CapacityBcm/y', 'CapacityBOEd', 'LengthKnownKm', 'StartLocation', 'EndCountry'
     ]
     if all(column in filtered_pipeline_df.columns for column in required_columns_pipeline):
+        # Parse the WKTFormat column manually to extract coordinates
+    
         def parse_wkt_linestring(wkt_string):
-            if isinstance(wkt_string, str) and wkt_string.startswith("LINESTRING"):
-                coords = wkt_string.replace("LINESTRING (", "").replace(")", "").split(", ")
-                return [tuple(map(float, coord.split())) for coord in coords]
-            return []
-
-        filtered_pipeline_df['coordinates'] = filtered_pipeline_df['WKTFormat'].apply(parse_wkt_linestring)
-
+            """
+            Converts a cleaned WKT string (no LINESTRING/MULTILINESTRING)
+            to a list of (x, y) tuples.
+            """
+            if pd.isna(wkt_string):
+                return []
+            try:
+                return [tuple(map(float, point.strip().split())) for point in wkt_string.split(",")]
+            except:
+                return []
+        
+        # Apply the parsing function to extract coordinates
+        filtered_pipeline_df['coordinates'] = filtered_pipeline_df['NewWKTFormat'].apply(parse_wkt_linestring)
+        # Flatten the coordinates for Plotly
         pipeline_data = []
         for _, row in filtered_pipeline_df.iterrows():
             for coord in row['coordinates']:
@@ -311,11 +327,13 @@ with tab3:
                     'CapacityBcm/y': row['CapacityBcm/y'],
                     'CapacityBOEd': row['CapacityBOEd'],
                     'LengthKnownKm': row['LengthKnownKm'],
-                    'StartLocation': row['StartLocation']
+                    'StartLocation': row['StartLocation'],
+                    'EndCountry': row['EndCountry']
                 })
 
         pipeline_map_df = pd.DataFrame(pipeline_data)
 
+        # Create a line map using Plotly Express
         fig = px.line_mapbox(
             pipeline_map_df,
             lat='Latitude',
@@ -335,18 +353,21 @@ with tab3:
                 'CapacityBOEd': True,
                 'LengthKnownKm': True,
                 'StartLocation': True,
-                'Latitude': False,
-                'Longitude': False
+                'EndCountry': True,
+                'Latitude': False,  # Hide latitude in hover data
+                'Longitude': False  # Hide longitude in hover data
             }
         )
 
+        # Update layout for better visualization
         fig.update_layout(
             height=800,
             width=900,
-            mapbox_accesstoken='YOUR_MAPBOX_ACCESS_TOKEN',
-            showlegend=False
+            mapbox_accesstoken='YOUR_MAPBOX_ACCESS_TOKEN',  # Replace with your Mapbox token
+            showlegend=False  # Disable the legend
         )
 
+        # Display the map
         st.plotly_chart(fig, use_container_width=True)
     else:
         missing_columns = [col for col in required_columns_pipeline if col not in filtered_pipeline_df.columns]
