@@ -353,15 +353,20 @@ with tab3:
     selected_status = st.sidebar.selectbox('Status', status_options)
     selected_end_country = st.sidebar.selectbox('End Country', end_country_options)
 
-    # Add a text input filter for Countries
-    country_filter = st.sidebar.text_input('Filter by Country (contains)', '')
+    # Add a dropdown filter for Countries
+    country_options = [
+        'All', 'Algeria', 'Austria', 'Benin', 'Bulgaria', 'France', 'Germany', 'Ghana', 'Greece', 'Guinea',
+        'Guinea-Bissau', 'Iran', 'Ireland', 'Israel', 'Italy', 'Jordan', 'Latvia', 'Liberia', 'Libya', 'Morocco',
+        'Netherlands', 'Nigeria', 'Portugal', 'Qatar', 'Saudi Arabia', 'Senegal', 'Spain', 'Switzerland', 'Syria', 'Türkiye'
+    ]
+    selected_country = st.sidebar.selectbox('Pipeline Systems (via Country)', country_options)
 
     # Apply filters
     filtered_pipeline_df = pipeline_df[
         ((pipeline_df['Fuel'] == selected_fuel) | (selected_fuel == 'All')) &
         ((pipeline_df['Status'] == selected_status) | (selected_status == 'All')) &
         ((pipeline_df['EndCountry'] == selected_end_country) | (selected_end_country == 'All')) &
-        (pipeline_df['Countries'].str.contains(country_filter, case=False, na=False) if country_filter else True)
+        ((pipeline_df['Countries'].str.contains(selected_country, case=False, na=False)) if selected_country != 'All' else True)
     ]
 
     # Ensure the required columns exist
