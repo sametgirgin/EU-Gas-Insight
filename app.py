@@ -353,11 +353,15 @@ with tab3:
     selected_status = st.sidebar.selectbox('Status', status_options)
     selected_end_country = st.sidebar.selectbox('End Country', end_country_options)
 
+    # Add a text input filter for Countries
+    country_filter = st.sidebar.text_input('Filter by Country (contains)', '')
+
     # Apply filters
     filtered_pipeline_df = pipeline_df[
         ((pipeline_df['Fuel'] == selected_fuel) | (selected_fuel == 'All')) &
         ((pipeline_df['Status'] == selected_status) | (selected_status == 'All')) &
-        ((pipeline_df['EndCountry'] == selected_end_country) | (selected_end_country == 'All'))
+        ((pipeline_df['EndCountry'] == selected_end_country) | (selected_end_country == 'All')) &
+        (pipeline_df['Countries'].str.contains(country_filter, case=False, na=False) if country_filter else True)
     ]
 
     # Ensure the required columns exist
@@ -404,12 +408,12 @@ with tab3:
         # Display the map
         st.plotly_chart(fig, use_container_width=True)
 
-        # Display the table below the map with distinct rows
-        st.write("### Pipeline Details")
+        # Display the table below the map with distinct rows and no index
+        st.write("## Pipelines List")
         st.dataframe(
             filtered_pipeline_df[
                 ['PipelineName', 'Fuel', 'Countries', 'Owner', 'CapacityBcm/y', 'CapacityBOEd', 'LengthKnownKm']
-            ].drop_duplicates()
+            ].drop_duplicates().reset_index(drop=True)  # Reset index and drop the old one
         )
     else:
         missing_columns = [col for col in required_columns_pipeline if col not in filtered_pipeline_df.columns]
