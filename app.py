@@ -99,8 +99,6 @@ except FileNotFoundError:
     status_text = "Status file not found."
 
 # Sidebar for filters
-# Add the logo above the filters in the sidebar
-st.sidebar.image("logo.png", width=20)  # Adjust the width as needed
 
 # Create tabs
 tab1, tab2, tab3, tab4, tab5 = st.tabs(["EU O&G Power Plants Map and Charts", "EU LNG Terminals", "EU Gas Pipeline Map", "Dictionary", "GasGPT"])
