@@ -6,6 +6,29 @@ import requests  # For API calls
 import google.generativeai as genai
 import os
 
+# Set page config
+st.set_page_config(
+    page_title="European Gas Report",
+    layout="wide"
+)
+
+# Create two columns for the header
+left_col, right_col = st.columns([4, 1])
+
+# Add title, subtitle, and logo
+with left_col:
+    st.markdown(
+        """
+        <h1 style="color: #007BFF; margin: 0;">Sustainable Energy Analytics</h1>
+        <h2 style="color: #007BFF; margin: 0;">European Gas Report 🇪🇺</h2>
+        """,
+        unsafe_allow_html=True
+    )
+
+with right_col:
+    # Display the logo
+    st.image("logo.png", width=50)  # Adjust the width as needed
+
 # Configure the Gemini API with your API key from secrets
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
 
@@ -521,8 +544,10 @@ with tab4:
         st.error("The file 'lng.txt' was not found.")
 
 with tab5:
-    st.title("Chat with Google Gemini on EU Gas Data")
-
+    st.markdown(
+        "<h2 style='text-align: center; color: black;'>Chat with Google Gemini on EU Gas Data</h2>",
+        unsafe_allow_html=True
+    )
     # Input for user question
     user_prompt = st.text_area("Ask a question about gas power plants:", "What are the advantages of gas power plants?")
 
