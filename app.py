@@ -5,7 +5,6 @@ import numpy as np
 import requests  # For API calls
 import google.generativeai as genai
 import os
-from st_aggrid import AgGrid, GridOptionsBuilder
 
 # Add company name, slogan, and logo at the top of the page
 st.set_page_config(
