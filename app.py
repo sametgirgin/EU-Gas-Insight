@@ -344,9 +344,9 @@ with tab2:
 with tab3:
     # Sidebar filters for pipelines
     st.sidebar.subheader("Filters for European Gas Pipelines")
-    fuel_options = ['All'] + pipeline_df['Fuel'].dropna().unique().tolist()
-    status_options = ['All'] + pipeline_df['Status'].dropna().unique().tolist()
-    end_country_options = ['All'] + pipeline_df['EndCountry'].dropna().unique().tolist()
+    fuel_options = ['All'] + sorted(pipeline_df['Fuel'].dropna().unique().tolist())
+    status_options = ['All'] + sorted(pipeline_df['Status'].dropna().unique().tolist())
+    end_country_options = ['All'] + sorted(pipeline_df['EndCountry'].dropna().unique().tolist())
 
     # Create filters in the sidebar
     selected_fuel = st.sidebar.selectbox('Fuel', fuel_options)
@@ -359,6 +359,7 @@ with tab3:
         'Guinea-Bissau', 'Iran', 'Ireland', 'Israel', 'Italy', 'Jordan', 'Latvia', 'Liberia', 'Libya', 'Morocco',
         'Netherlands', 'Nigeria', 'Portugal', 'Qatar', 'Saudi Arabia', 'Senegal', 'Spain', 'Switzerland', 'Syria', 'Türkiye'
     ]
+    country_options = sorted(country_options)  # Sort the country options
     selected_country = st.sidebar.selectbox('Pipeline Systems (via Country)', country_options)
 
     # Apply filters
