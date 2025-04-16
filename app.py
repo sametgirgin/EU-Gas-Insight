@@ -6,12 +6,6 @@ import requests  # For API calls
 import google.generativeai as genai
 import os
 
-# Add company name, slogan, and logo at the top of the page
-st.set_page_config(
-    page_title="European Gas Report",
-    layout="wide"
-)
-
 # Create two columns for the header
 left_col, right_col = st.columns([4, 1])
 
@@ -24,6 +18,10 @@ with left_col:
         """,
         unsafe_allow_html=True
     )
+
+with right_col:
+    # Display the logo
+    st.image("logo.png", width=50)  # Adjust the width as needed
 # Configure the Gemini API with your API key from secrets
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
 
