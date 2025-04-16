@@ -5,8 +5,9 @@ import numpy as np
 import requests  # For API calls
 import google.generativeai as genai
 import os
+from st_aggrid import AgGrid, GridOptionsBuilder
 
-# Set page config
+# Add company name, slogan, and logo at the top of the page
 st.set_page_config(
     page_title="European Gas Report",
     layout="wide"
@@ -24,11 +25,6 @@ with left_col:
         """,
         unsafe_allow_html=True
     )
-
-with right_col:
-    # Display the logo
-    st.image("logo.png", width=50)  # Adjust the width as needed
-
 # Configure the Gemini API with your API key from secrets
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
 
@@ -79,7 +75,9 @@ def load_lng_data():
 
 @st.cache_data
 def load_pipeline_data():
-    return pd.read_excel('gaspipeline.xlsx')
+    #return pd.read_excel('gaspipeline.xlsx') 
+    return pd.read_excel('pipeline_map_data.xlsx')
+
 
 # Use the cached functions
 df = load_gaspowerplants_data()
@@ -104,7 +102,8 @@ except FileNotFoundError:
     status_text = "Status file not found."
 
 # Sidebar for filters
-#st.sidebar.header("Filter")
+# Add the logo above the filters in the sidebar
+st.sidebar.image("logo.png", width=20)  # Adjust the width as needed
 
 # Create tabs
 tab1, tab2, tab3, tab4, tab5 = st.tabs(["EU O&G Power Plants Map and Charts", "EU LNG Terminals", "EU Gas Pipeline Map", "Dictionary", "GasGPT"])
@@ -347,7 +346,6 @@ with tab2:
     st.plotly_chart(bar_fig_lng, use_container_width=True)
 
 # Tab 3: EU Gas Pipeline Map
-# Tab 3: EU Gas Pipeline Map (using NewWKTFormat)
 with tab3:
     # Sidebar filters for pipelines
     st.sidebar.subheader("Filters for European Gas Pipelines")
@@ -369,51 +367,16 @@ with tab3:
 
     # Ensure the required columns exist
     required_columns_pipeline = [
-        'PipelineName', 'NewWKTFormat', 'Fuel', 'Countries', 'Status', 'Owner', 
+        'PipelineName', 'Fuel', 'Countries', 'Status', 'Owner', 
         'StartYear1', 'CapacityBcm/y', 'CapacityBOEd', 'LengthKnownKm', 'StartLocation', 'EndCountry'
     ]
     if all(column in filtered_pipeline_df.columns for column in required_columns_pipeline):
-        # Parse the WKTFormat column manually to extract coordinates
-    
-        def parse_wkt_linestring(wkt_string):
-            """
-            Converts a cleaned WKT string (no LINESTRING/MULTILINESTRING)
-            to a list of (x, y) tuples.
-            """
-            if pd.isna(wkt_string):
-                return []
-            try:
-                return [tuple(map(float, point.strip().split())) for point in wkt_string.split(",")]
-            except:
-                return []
-        
-        # Apply the parsing function to extract coordinates
-        filtered_pipeline_df['coordinates'] = filtered_pipeline_df['NewWKTFormat'].apply(parse_wkt_linestring)
-        # Flatten the coordinates for Plotly
-        pipeline_data = []
-        for _, row in filtered_pipeline_df.iterrows():
-            for coord in row['coordinates']:
-                pipeline_data.append({
-                    'PipelineName': row['PipelineName'],
-                    'Latitude': coord[1],
-                    'Longitude': coord[0],
-                    'Fuel': row['Fuel'],
-                    'Countries': row['Countries'],
-                    'Status': row['Status'],
-                    'Owner': row['Owner'],
-                    'StartYear1': row['StartYear1'],
-                    'CapacityBcm/y': row['CapacityBcm/y'],
-                    'CapacityBOEd': row['CapacityBOEd'],
-                    'LengthKnownKm': row['LengthKnownKm'],
-                    'StartLocation': row['StartLocation'],
-                    'EndCountry': row['EndCountry']
-                })
 
-        pipeline_map_df = pd.DataFrame(pipeline_data)
+        #pipeline_map_df = pd.read_excel('pipeline_map_data.xlsx')
 
         # Create a line map using Plotly Express
         fig = px.line_mapbox(
-            pipeline_map_df,
+            filtered_pipeline_df,
             lat='Latitude',
             lon='Longitude',
             color='PipelineName',
