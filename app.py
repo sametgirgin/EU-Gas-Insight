@@ -13,15 +13,15 @@ left_col, right_col = st.columns([4, 1])
 with left_col:
     st.markdown(
         """
-        <h1 style="color: #007BFF; margin: 0;">Sustainable Energy Analytics</h1>
-        <h2 style="color: #007BFF; margin: 0;">European Gas Report 🇪🇺</h2>
+        <h2 style="color: #007BFF; margin: 0;">Sustainable Energy Analytics</h2>
+        <h3 style="color: #007BFF; margin: 0;">European Gas Report 🇪🇺</h>
         """,
         unsafe_allow_html=True
     )
 
 with right_col:
     # Display the logo
-    st.image("logo.png", width=50)  # Adjust the width as needed
+    st.image("logo.png", width=30)  # Adjust the width as needed
 # Configure the Gemini API with your API key from secrets
 GOOGLE_API_KEY = os.environ.get("GOOGLE_API_KEY")
 
@@ -367,8 +367,6 @@ with tab3:
     ]
     if all(column in filtered_pipeline_df.columns for column in required_columns_pipeline):
 
-        #pipeline_map_df = pd.read_excel('pipeline_map_data.xlsx')
-
         # Create a line map using Plotly Express
         fig = px.line_mapbox(
             filtered_pipeline_df,
@@ -405,6 +403,14 @@ with tab3:
 
         # Display the map
         st.plotly_chart(fig, use_container_width=True)
+
+        # Display the table below the map with distinct rows
+        st.write("### Pipeline Details")
+        st.dataframe(
+            filtered_pipeline_df[
+                ['PipelineName', 'Fuel', 'Countries', 'Owner', 'CapacityBcm/y', 'CapacityBOEd', 'LengthKnownKm']
+            ].drop_duplicates()
+        )
     else:
         missing_columns = [col for col in required_columns_pipeline if col not in filtered_pipeline_df.columns]
         st.error(f"The following required columns are missing in 'gaspipeline.xlsx': {missing_columns}")
