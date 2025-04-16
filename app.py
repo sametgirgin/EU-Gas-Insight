@@ -109,12 +109,12 @@ with tab1:
     
     # Filters for gaspowerplants.xlsx
     st.sidebar.subheader("Filters for Oil & Gas Power Plants")
-    country_options = ['All'] + df['Country/Area'].dropna().unique().tolist()
-    fuel_options = ['All'] + df['Fuel'].dropna().unique().tolist()
-    status_options = ['All'] + df['Status'].dropna().unique().tolist()
-    technology_options = ['All'] + df['Turbine/Engine Technology'].dropna().unique().tolist()
-    manufacturer_options = ['All'] + df['Equipment Manufacturer/Model'].dropna().unique().tolist()
-    hydrogen_options = ['All'] + df['Hydrogen capable?'].dropna().unique().tolist()
+    country_options = ['All'] + sorted(df['Country/Area'].dropna().unique().tolist())
+    fuel_options = ['All'] + sorted(df['Fuel'].dropna().unique().tolist())
+    status_options = ['All'] + sorted(df['Status'].dropna().unique().tolist())
+    technology_options = ['All'] + sorted(df['Turbine/Engine Technology'].dropna().unique().tolist())
+    manufacturer_options = ['All'] + sorted(df['Equipment Manufacturer/Model'].dropna().unique().tolist())
+    hydrogen_options = ['All'] + sorted(df['Hydrogen capable?'].dropna().unique().tolist())
 
     # Create filters in the sidebar as dropdowns
     selected_country = st.sidebar.selectbox('Country/Area', country_options)
@@ -243,9 +243,9 @@ with tab1:
 with tab2:
     # Sidebar filters for LNG Terminals
     st.sidebar.subheader("Filters for LNG Terminals")
-    facility_type_options = ['All'] + lng_df['FacilityType'].dropna().unique().tolist()
-    status_options = ['All'] + lng_df['Status'].dropna().unique().tolist()
-    country_options = ['All'] + lng_df['Country'].dropna().unique().tolist()
+    facility_type_options = ['All'] + sorted(lng_df['FacilityType'].dropna().unique().tolist())
+    status_options = ['All'] + sorted(lng_df['Status'].dropna().unique().tolist())
+    country_options = ['All'] + sorted(lng_df['Country'].dropna().unique().tolist())
 
     # Create filters in the sidebar
     selected_facility_type = st.sidebar.selectbox('Facility Type', facility_type_options)
@@ -359,7 +359,7 @@ with tab3:
         'Guinea-Bissau', 'Iran', 'Ireland', 'Israel', 'Italy', 'Jordan', 'Latvia', 'Liberia', 'Libya', 'Morocco',
         'Netherlands', 'Nigeria', 'Portugal', 'Qatar', 'Saudi Arabia', 'Senegal', 'Spain', 'Switzerland', 'Syria', 'Türkiye'
     ]
-    country_options = sorted(country_options)  # Sort the country options
+    #country_options = sorted(country_options)  # Sort the country options
     selected_country = st.sidebar.selectbox('Pipeline Systems (via Country)', country_options)
 
     # Apply filters
