@@ -6,6 +6,8 @@ import requests  # For API calls
 import google.generativeai as genai
 import os
 
+st.set_page_config(layout="wide")
+
 # Create two columns for the header
 left_col, right_col = st.columns([4, 1])
 
@@ -75,11 +77,16 @@ def load_pipeline_data():
     #return pd.read_excel('gaspipeline.xlsx') 
     return pd.read_excel('pipeline_map_data.xlsx')
 
+# Load the oil and gas extraction data
+@st.cache_data
+def load_oil_and_gas_extraction_data():
+    return pd.read_excel('oilandgasextraction.xlsx')
 
 # Use the cached functions
 df = load_gaspowerplants_data()
 lng_df = load_lng_data()
 pipeline_df = load_pipeline_data()
+extraction_df = load_oil_and_gas_extraction_data()
 
 # Ensure the CapacityInMtpa column is numeric
 lng_df['CapacityInMtpa'] = pd.to_numeric(lng_df['CapacityInMtpa'], errors='coerce')
@@ -101,7 +108,7 @@ except FileNotFoundError:
 # Sidebar for filters
 
 # Create tabs
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["EU O&G Power Plants Map and Charts", "EU LNG Terminals", "EU Gas Pipeline Map", "Dictionary", "GasGPT"])
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["EU O&G Power Plants Map and Charts", "EU LNG Terminals", "EU Gas Pipeline Map", "Dictionary", "GasGPT", "Oil and Gas Extraction"])
 
 # Tab 1: EU Oil & Gas Power Plants
 with tab1:
@@ -536,3 +543,61 @@ with tab5:
                 st.error(f"An error occurred: {e}")
         else:
             st.warning("Please enter a question.")
+
+# Tab 6: Oil and Gas Extraction Map
+with tab6:
+    st.write("## Oil and Gas Extraction Map")
+
+    # Sidebar filters for oil and gas extraction
+    st.sidebar.subheader("Filters for Oil and Gas Extraction")
+    country_options = ['All'] + sorted(extraction_df['Country/Area'].dropna().unique().tolist())
+    status_options = ['All'] + sorted(extraction_df['Status'].dropna().unique().tolist())
+
+    # Create filters in the sidebar
+    selected_country = st.sidebar.selectbox('Country/Area', country_options)
+    selected_status = st.sidebar.selectbox('Status', status_options)
+
+    # Apply filters
+    filtered_extraction_df = extraction_df[
+        ((extraction_df['Country/Area'] == selected_country) | (selected_country == 'All')) &
+        ((extraction_df['Status'] == selected_status) | (selected_status == 'All')) 
+    ]
+
+    # Ensure the required columns exist
+    required_columns_extraction = ['Name', 'Status', 'Country/Area', 'Latitude', 'Longitude', 'Discovery year', 'Production start year', 'Operator', 'Total Hydrocarbon Prod (Mboe/y)']
+    #required_columns_extraction = ['Name', 'Status', 'Country/Area', 'Latitude', 'Longitude', 'Discovery year', 'Production start year', 'Operator']
+  
+    if all(column in filtered_extraction_df.columns for column in required_columns_extraction):
+        # Create a bubble map using Plotly Express with Mapbox
+        extraction_fig = px.scatter_mapbox(
+            filtered_extraction_df,
+            lat='Latitude',
+            lon='Longitude',
+            hover_name='Name',
+            hover_data={
+                'Status': True,
+                'Country/Area': True,
+                'Operator': True,
+                #'Total Hydrocarbon Prod (Mboe/y)': True,
+                'Latitude': False,
+                'Longitude': False
+            },
+            color='Status',  # Color based on resource type
+            color_continuous_scale=px.colors.cyclical.IceFire,
+            size_max=15,
+            zoom=3,
+            mapbox_style="carto-positron"
+        )
+
+        # Update layout to make the map visually appealing
+        extraction_fig.update_layout(
+            mapbox_accesstoken='YOUR_MAPBOX_ACCESS_TOKEN',  # Replace with your Mapbox token
+            height=800,  # Set the height of the map
+            width=900,  # Set the width of the map
+            title="Oil and Gas Extraction Map"
+        )
+
+        # Display the map
+        st.plotly_chart(extraction_fig, use_container_width=True)
+    else:
+        st.error("The required columns for the Oil and Gas Extraction map are missing in the 'oilandgasextraction.xlsx' file.")
