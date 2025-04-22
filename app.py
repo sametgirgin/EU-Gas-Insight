@@ -466,7 +466,7 @@ with tab4:
                 'Status': True,
                 'Country/Area': True,
                 'Operator': True,
-                #'Total Hydrocarbon Prod (Mboe/y)': True,
+                'Total Hydrocarbon Prod (Mboe/y)': True,
                 'Latitude': False,
                 'Longitude': False
             },
