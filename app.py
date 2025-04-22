@@ -601,6 +601,3 @@ with tab6:
 
     except FileNotFoundError:
         st.error("The file 'lng.txt' was not found.")
-
-
-s
