@@ -108,10 +108,34 @@ except FileNotFoundError:
 # Sidebar for filters
 
 # Create tabs
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["EU O&G Power Plants Map and Charts", "EU LNG Terminals", "EU Gas Pipeline Map", "Oil and Gas Extraction", "GasGPT", "Dictionary"])
+tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(["Gas Reports","EU O&G Power Plants Map and Charts", "EU LNG Terminals", "EU Gas Pipeline Map", "Oil and Gas Extraction", "GasGPT", "Dictionary"])
+
+with tab1:
+    #st.write("## Gas Reports")
+
+    # Load the gas_reports.xlsx file
+    try:
+        gas_reports_df = pd.read_excel('gas_reports.xlsx')
+
+        # Ensure the required columns exist
+        required_columns = ['Institutions', 'Report Category', 'Month', 'Link', 'Summary']
+        if all(column in gas_reports_df.columns for column in required_columns):
+            # Display the reports grouped by category
+            for category, group in gas_reports_df.groupby('Institutions'):
+                st.write(f"### {category}")
+                for _, row in group.iterrows():
+                    st.markdown(f"**Report**: {row['Report Category']} / {row['Month']}")
+                    st.markdown(f"**Summary**: {row['Summary']}")
+                    st.markdown(f"[Read the Report]({row['Link']})")
+                    st.markdown("---")
+        else:
+            missing_columns = [col for col in required_columns if col not in gas_reports_df.columns]
+            st.error(f"The following required columns are missing in 'gas_reports.xlsx': {missing_columns}")
+    except FileNotFoundError:
+        st.error("The file 'gas_reports.xlsx' was not found.")
 
 # Tab 1: EU Oil & Gas Power Plants
-with tab1:
+with tab2:
     st.write("## EU Oil & Gas Power Plants Map")
     
     # Filters for gaspowerplants.xlsx
@@ -247,7 +271,7 @@ with tab1:
     st.plotly_chart(bar_fig_status, use_container_width=True)
 
 # Tab 2: EU LNG Terminals
-with tab2:
+with tab3:
     # Sidebar filters for LNG Terminals
     st.sidebar.subheader("Filters for LNG Terminals")
     facility_type_options = ['All'] + sorted(lng_df['FacilityType'].dropna().unique().tolist())
@@ -348,7 +372,7 @@ with tab2:
     st.plotly_chart(bar_fig_lng, use_container_width=True)
 
 # Tab 3: EU Gas Pipeline Map
-with tab3:
+with tab4:
     # Sidebar filters for pipelines
     st.sidebar.subheader("Filters for European Gas Pipelines")
     fuel_options = ['All'] + sorted(pipeline_df['Fuel'].dropna().unique().tolist())
@@ -433,7 +457,7 @@ with tab3:
         st.error(f"The following required columns are missing in 'gaspipeline.xlsx': {missing_columns}")
 
 # Tab 4: Oil and Gas Extraction Map
-with tab4:
+with tab5:
     st.write("## Oil and Gas Extraction Map")
 
     # Sidebar filters for oil and gas extraction
@@ -490,7 +514,7 @@ with tab4:
     else:
         st.error("The required columns for the Oil and Gas Extraction map are missing in the 'oilandgasextraction.xlsx' file.")
 
-with tab5:
+with tab6:
     st.markdown(
         "<h2 style='text-align: center; color: black;'>Chat with Google Gemini on EU Gas Data</h2>",
         unsafe_allow_html=True
@@ -510,7 +534,7 @@ with tab5:
         else:
             st.warning("Please enter a question.")
 
-with tab6:
+with tab7:
     # Read and display the status.txt file
     try:
         with open('status.txt', 'r') as file:
