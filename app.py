@@ -390,7 +390,6 @@ with tab4:
         'Guinea-Bissau', 'Iran', 'Ireland', 'Israel', 'Italy', 'Jordan', 'Latvia', 'Liberia', 'Libya', 'Morocco',
         'Netherlands', 'Nigeria', 'Portugal', 'Qatar', 'Saudi Arabia', 'Senegal', 'Spain', 'Switzerland', 'Syria', 'Türkiye'
     ]
-    #country_options = sorted(country_options)  # Sort the country options
     selected_country = st.sidebar.selectbox('Pipeline Systems (via Country)', country_options)
 
     # Apply filters
@@ -407,56 +406,57 @@ with tab4:
         'StartYear1', 'CapacityBcm/y', 'CapacityBOEd', 'LengthKnownKm', 'StartLocation', 'EndCountry'
     ]
     if all(column in filtered_pipeline_df.columns for column in required_columns_pipeline):
-        
-        # Create a line map using Plotly Express
-        fig = px.line_mapbox(
-            filtered_pipeline_df,
-            lat='Latitude',
-            lon='Longitude',
-            color='PipelineName',
-            title="EU Gas Pipeline Map",
-            mapbox_style="carto-positron",
-            zoom=3,
-            hover_data={
-                'PipelineName': True,
-                'Fuel': True,
-                'Countries': True,
-                'Status': True,
-                'Owner': True,
-                'StartYear1': True,
-                'CapacityBcm/y': True,
-                'CapacityBOEd': True,
-                'LengthKnownKm': True,
-                'StartLocation': True,
-                'EndCountry': True,
-                'Latitude': False,  # Hide latitude in hover data
-                'Longitude': False  # Hide longitude in hover data
-            }
-        )
-
-        # Update layout for better visualization
-        fig.update_layout(
-            height=800,
-            width=900,
-            mapbox_accesstoken='YOUR_MAPBOX_ACCESS_TOKEN',  # Replace with your Mapbox token
-            showlegend=False  # Disable the legend
-        )
-
-        # Display the map
-        st.plotly_chart(fig, use_container_width=True)
+        # Add the title and image above the dataframe
+        st.write("## EU Gas Pipeline Map")
+        st.image("newplot.png", caption="EU Gas Pipeline Map", use_column_width=True)
 
         # Display the table below the map with distinct rows and no index
-        st.write("## Pipelines List")
+        st.write("## Pipeline List")
         st.dataframe(
             filtered_pipeline_df[
                 ['PipelineName', 'Fuel', 'Countries', 'Owner', 'CapacityBcm/y', 'CapacityBOEd', 'LengthKnownKm']
             ].drop_duplicates().reset_index(drop=True)  # Reset index and drop the old one
         )
+
+        # Create a bar chart for total CapacityBcm/y by Status using distinct rows
+        st.write("## Total Capacity (Bcm/y) by Status")
+
+        # Use only distinct rows for the bar chart
+        distinct_pipeline_df = filtered_pipeline_df[
+            ['PipelineName', 'Fuel', 'Countries', 'Owner', 'CapacityBcm/y', 'CapacityBOEd', 'LengthKnownKm', 'Status']
+        ].drop_duplicates()
+
+        # Group the distinct dataframe by 'Status' and calculate the total 'CapacityBcm/y'
+        status_capacity = distinct_pipeline_df.groupby('Status')['CapacityBcm/y'].sum().reset_index()
+
+        # Sort the data by 'CapacityBcm/y' in descending order
+        status_capacity = status_capacity.sort_values(by='CapacityBcm/y', ascending=False)
+
+        # Create the bar chart using Plotly Express
+        bar_fig_status = px.bar(
+            status_capacity,
+            x='Status',
+            y='CapacityBcm/y',
+            title='Total Capacity (Bcm/y) by Status',
+            labels={'CapacityBcm/y': 'Total Capacity (Bcm/y)', 'Status': 'Pipeline Status'},
+            color='CapacityBcm/y',
+            color_continuous_scale=px.colors.sequential.Blues
+        )
+
+        # Update the layout for better readability
+        bar_fig_status.update_layout(
+            xaxis_title="Pipeline Status",
+            yaxis_title="Total Capacity (Bcm/y)",
+            xaxis={'tickangle': 45}
+        )
+
+        # Display the bar chart
+        st.plotly_chart(bar_fig_status, use_container_width=True)
     else:
         missing_columns = [col for col in required_columns_pipeline if col not in filtered_pipeline_df.columns]
         st.error(f"The following required columns are missing in 'gaspipeline.xlsx': {missing_columns}")
 
-# Tab 4: Oil and Gas Extraction Map
+# Tab 5: Oil and Gas Extraction Map
 with tab5:
     st.write("## Oil and Gas Extraction Map")
 
