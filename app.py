@@ -270,7 +270,7 @@ with tab2:
     # Display the bar chart
     st.plotly_chart(bar_fig_status, use_container_width=True)
 
-# Tab 2: EU LNG Terminals
+# Tab 3: EU LNG Terminals
 with tab3:
     # Sidebar filters for LNG Terminals
     st.sidebar.subheader("Filters for LNG Terminals")
@@ -371,7 +371,7 @@ with tab3:
     # Display the bar chart
     st.plotly_chart(bar_fig_lng, use_container_width=True)
 
-# Tab 3: EU Gas Pipeline Map
+# Tab 4: EU Gas Pipeline Map
 with tab4:
     # Sidebar filters for pipelines
     st.sidebar.subheader("Filters for European Gas Pipelines")
@@ -407,7 +407,7 @@ with tab4:
         'StartYear1', 'CapacityBcm/y', 'CapacityBOEd', 'LengthKnownKm', 'StartLocation', 'EndCountry'
     ]
     if all(column in filtered_pipeline_df.columns for column in required_columns_pipeline):
-
+        """
         # Create a line map using Plotly Express
         fig = px.line_mapbox(
             filtered_pipeline_df,
@@ -444,6 +444,8 @@ with tab4:
 
         # Display the map
         st.plotly_chart(fig, use_container_width=True)
+
+        """
 
         # Display the table below the map with distinct rows and no index
         st.write("## Pipelines List")
