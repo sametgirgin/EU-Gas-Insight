@@ -408,7 +408,7 @@ with tab4:
     if all(column in filtered_pipeline_df.columns for column in required_columns_pipeline):
         # Add the title and image above the dataframe
         st.write("## EU Gas Pipeline Map")
-        st.image("newplot.png", caption="EU Gas Pipeline Map", use_column_width=True)
+        st.image("newplot.png", caption="EU Gas Pipeline Map", use_container_width=True)
 
         # Display the table below the map with distinct rows and no index
         st.write("## Pipeline List")
