@@ -407,7 +407,7 @@ with tab4:
         'StartYear1', 'CapacityBcm/y', 'CapacityBOEd', 'LengthKnownKm', 'StartLocation', 'EndCountry'
     ]
     if all(column in filtered_pipeline_df.columns for column in required_columns_pipeline):
-        """
+        
         # Create a line map using Plotly Express
         fig = px.line_mapbox(
             filtered_pipeline_df,
@@ -444,8 +444,6 @@ with tab4:
 
         # Display the map
         st.plotly_chart(fig, use_container_width=True)
-
-        """
 
         # Display the table below the map with distinct rows and no index
         st.write("## Pipelines List")
