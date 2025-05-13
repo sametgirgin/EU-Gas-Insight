@@ -108,12 +108,27 @@ except FileNotFoundError:
 # Sidebar for filters
 
 # Create tabs
-tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(["Gas Reports","EU O&G Power Plants Map and Charts", "EU LNG Terminals", "EU Gas Pipeline Map", "Oil and Gas Extraction", "GasGPT", "Dictionary"])
+tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(["Resources","EU O&G Power Plants Map and Charts", "EU LNG Terminals", "EU Gas Pipeline Map", "Oil and Gas Extraction", "GasGPT", "Dictionary"])
+
 
 with tab1:
-    #st.write("## Gas Reports")
+    st.write("## EU Gas Links")
+    # Read and display the useful_links.txt file
+    try:
+        with open('useful_links.txt', 'r') as file:
+            links = file.readlines()
 
+        # Display each link as a clickable hyperlink
+        for line in links:
+            if ':' in line:
+                title, url = line.split(':', 1)
+                st.markdown(f"- [{title.strip()}]({url.strip()})")
+    except FileNotFoundError:
+        st.error("The file 'useful_links.txt' was not found.")
     # Load the gas_reports.xlsx file
+    
+    st.write("## EU Gas Reports")
+
     try:
         gas_reports_df = pd.read_excel('gas_reports.xlsx')
 
