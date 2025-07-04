@@ -5,25 +5,30 @@ import numpy as np
 import requests  # For API calls
 import google.generativeai as genai
 import os
-
+import base64
 st.set_page_config(layout="wide")
 
 # Create two columns for the header
 left_col, right_col = st.columns([4, 1])
 
+
+def get_base64_image(image_path):
+    with open(image_path, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode()
+
 # Add title, subtitle, and logo
+
 with left_col:
     st.markdown(
         """
-        <h2 style="color: #007BFF; margin: 0;">RePath Insights</h2>
-        <h3 style="color: #007BFF; margin: 0;">European Gas Report 🇪🇺</h>
+        <h2 style="color: #007BFF; margin: 0;">European Gas Report 🇪🇺</h>
         """,
         unsafe_allow_html=True
     )
 
-with right_col:
-    # Display the logo
-    st.image("logo.png", width=30)  # Adjust the width as needed
+#with right_col:
+ #   # Display the logo
+  #  st.image("logo.png", width=30)  # Adjust the width as needed
 
 @st.cache_data
 def load_gaspowerplants_data():
@@ -601,3 +606,14 @@ with tab7:
 
     except FileNotFoundError:
         st.error("The file 'lng.txt' was not found.")
+
+image_path = os.path.join(os.path.dirname(__file__), '..', 'images', 'logo.png')
+img_base64 = get_base64_image(image_path)
+st.markdown(
+f"""
+<div style='text-align: right;'>
+     <img src='data:image/png;base64,{img_base64}' width='160'>
+</div>
+""",
+unsafe_allow_html=True
+)
