@@ -607,7 +607,7 @@ with tab7:
     except FileNotFoundError:
         st.error("The file 'lng.txt' was not found.")
 
-image_path = os.path.join(os.path.dirname(__file__), '..', 'images', 'logo.png')
+image_path = os.path.join(os.path.dirname(__file__), '..','logo.png')
 img_base64 = get_base64_image(image_path)
 st.markdown(
 f"""
