@@ -533,7 +533,7 @@ with tab5:
  #   st.markdown(
   #      "<h2 style='text-align: center; color: black;'>Chat with Google Gemini on EU Gas Data</h2>",
    #     unsafe_allow_html=True
-    )
+    #)
     # Input for user question
  #   user_prompt = st.text_area("Ask a question about gas power plants:", "What are the advantages of gas power plants?")
 
