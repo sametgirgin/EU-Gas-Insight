@@ -69,7 +69,7 @@ except FileNotFoundError:
 # Sidebar for filters
 
 # Create tabs
-tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(["Resources","EU O&G Power Plants Map and Charts", "EU LNG Terminals", "EU Gas Pipeline Map", "Oil and Gas Extraction", "GasGPT", "Dictionary"])
+tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(["Resources","EU O&G Power Plants Map and Charts", "EU LNG Terminals", "EU Gas Pipeline Map", "Oil and Gas Extraction", "Dictionary"])
 
 
 with tab1:
