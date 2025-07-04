@@ -529,25 +529,25 @@ with tab5:
     else:
         st.error("The required columns for the Oil and Gas Extraction map are missing in the 'oilandgasextraction.xlsx' file.")
 
-with tab6:
-    st.markdown(
-        "<h2 style='text-align: center; color: black;'>Chat with Google Gemini on EU Gas Data</h2>",
-        unsafe_allow_html=True
+#with tab6:
+ #   st.markdown(
+  #      "<h2 style='text-align: center; color: black;'>Chat with Google Gemini on EU Gas Data</h2>",
+   #     unsafe_allow_html=True
     )
     # Input for user question
-    user_prompt = st.text_area("Ask a question about gas power plants:", "What are the advantages of gas power plants?")
+ #   user_prompt = st.text_area("Ask a question about gas power plants:", "What are the advantages of gas power plants?")
 
-    if st.button("Generate Response"):
-        if user_prompt:
-            try:
+   # if st.button("Generate Response"):
+    #    if user_prompt:
+     #       try:
                 # Generate a response using the Gemini API
-                response = model.generate_content(user_prompt)
-                st.write("### Gemini's Response:")
-                st.write(response.text)  # Access the generated text
-            except Exception as e:
-                st.error(f"An error occurred: {e}")
-        else:
-            st.warning("Please enter a question.")
+      #          response = model.generate_content(user_prompt)
+       #         st.write("### Gemini's Response:")
+        #        st.write(response.text)  # Access the generated text
+         #   except Exception as e:
+          #      st.error(f"An error occurred: {e}")
+        #else:
+         #   st.warning("Please enter a question.")
 
 with tab7:
     # Read and display the status.txt file
